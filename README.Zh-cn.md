@@ -12,9 +12,6 @@
 1. 定时任务：自动化任务，目前支持接口调用和函数调用。
 ### 轻松实现go-admin写出第一个应用 - 文档教程
 
-### 手把手教你从入门到放弃 - 视频教程
-
-[如何启动go-admin](https://www.bilibili.com/video/BV1z5411x7JG)
 
 [使用生成工具轻松实现业务](https://www.bilibili.com/video/BV1Dg4y1i79D)
 
