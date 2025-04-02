@@ -7,21 +7,6 @@
 1. 接口文档：根据业务代码自动生成相关的api接口文档。
 1. 代码生成：根据数据表结构生成对应的增删改查相对应业务，全程可视化操作，让基本业务可以零代码实现。
 1. 表单构建：自定义页面样式，拖拉拽实现页面布局。
-
-### 启动说明
-
-#### 服务端启动说明
-
-```bash
-# 进入 go-admin 后端项目
-cd ./go-admin
-
-# 更新整理依赖
-go mod tidy
-
-# 编译项目
-go build
-
 # 修改配置 
 # 文件路径  go-admin/config/settings.yml
 vi ./config/settings.yml
