@@ -4,8 +4,6 @@
 [![Build Status](https://github.com/wenjianzhang/go-admin/workflows/build/badge.svg)](https://github.com/go-admin-team/go-admin)
 [![Release](https://img.shields.io/github/release/go-admin-team/go-admin.svg?style=flat-square)](https://github.com/go-admin-team/go-admin/releases)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/go-admin-team/go-admin)
-
-4. 菜单管理：配置系统菜单，操作权限，按钮权限标识，接口权限等。
 5. 角色管理：角色菜单权限分配、设置角色按机构进行数据范围权限划分。
 6. 字典管理：对系统中经常使用的一些较为固定的数据进行维护。
 7. 参数管理：对系统动态配置常用参数。
