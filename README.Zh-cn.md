@@ -8,38 +8,6 @@
 1. 代码生成：根据数据表结构生成对应的增删改查相对应业务，全程可视化操作，让基本业务可以零代码实现。
 1. 表单构建：自定义页面样式，拖拉拽实现页面布局。
 
-## 📦 本地开发
-
-### 环境要求
-
-go 1.18
-
-node版本: v14.16.0
-
-npm版本: 6.14.11
-
-### 开发目录创建
-
-```bash
-
-# 创建开发目录
-mkdir goadmin
-cd goadmin
-```
-
-### 获取代码
-
-> 重点注意：两个项目必须放在同一文件夹下；
-
-```bash
-# 获取后端代码
-git clone https://github.com/go-admin-team/go-admin.git
-
-# 获取前端代码
-git clone https://github.com/go-admin-team/go-admin-ui.git
-
-```
-
 ### 启动说明
 
 #### 服务端启动说明
