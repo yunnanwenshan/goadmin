@@ -163,14 +163,6 @@ env GOOS=windows GOARCH=amd64 go build main.go
 # linux
 env GOOS=linux GOARCH=amd64 go build main.go
 ```
-
-# 建议不要直接使用 cnpm 安装依赖，会有各种诡异的 bug。可以通过如下操作解决 npm 下载速度慢的问题
-npm install --registry=https://registry.npmmirror.com
-
-
-## 📨 互动
-
-<table>
    <tr>
     <td><img src="https://raw.githubusercontent.com/wenjianzhang/image/master/img/wx.png" width="180px"></td>
     <td><img src="https://doc-image.zhangwj.com/img/qrcode_for_gh_b798dc7db30c_258.jpg" width="180px"></td>
