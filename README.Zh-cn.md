@@ -7,30 +7,9 @@
 1. 接口文档：根据业务代码自动生成相关的api接口文档。
 1. 代码生成：根据数据表结构生成对应的增删改查相对应业务，全程可视化操作，让基本业务可以零代码实现。
 1. 表单构建：自定义页面样式，拖拉拽实现页面布局。
-⚠️注意 在windows环境如果没有安装中CGO，会出现这个问题；
-
-```bash
-E:\go-admin>go build
-# github.com/mattn/go-sqlite3
-cgo: exec /missing-cc: exec: "/missing-cc": file does not exist
-```
-
-or
-
-```bash
-D:\Code\go-admin>go build
-# github.com/mattn/go-sqlite3
-cgo: exec gcc: exec: "gcc": executable file not found in %PATH%
-```
-
-[解决cgo问题进入](https://doc.go-admin.dev/zh-CN/guide/faq#cgo-%E7%9A%84%E9%97%AE%E9%A2%98)
-
-
-#### 初始化数据库，以及服务启动
 
 ``` bash
 # 首次配置需要初始化数据库资源信息
-# macOS or linux 下使用
 $ ./go-admin migrate -c config/settings.dev.yml
 
 # ⚠️注意:windows 下使用
