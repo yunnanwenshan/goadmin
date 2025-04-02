@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/go-git/go-git/v5"
 	"github.com/pkg/errors"
 	"os"
 	"os/exec"
@@ -224,37 +225,126 @@ func (c *BaseGitCmd) commit(path string, cmd *gitCmdParams) (*gitDTO, error) {
 	return dto, nil
 }
 
+// 为了保证 engine Marshal 不报错，一定要返回一个结构体
+func (c *BaseGitCmd) push(_ *git.Repository, path string, cmd *gitCmdParams) (*gitDTO, error) {
+	pushDTO := &gitDTO{}
+	fmt.Printf("git-cmd-handler-gitCmdPush, cmd: %+v", cmd)
+
+	//err := c.setGitRepositoryUrl(r, cmd.Token, path, cmd.RemoteName)
+	//if err != nil {
+	//	log.Infof("git-cmd-handler-gitCmdPush, setGitRepositoryUrl err: %+v", err)
+	//	pushDTO.Error = err.Error()
+	//	return pushDTO
+	//}
+
+	startTime := time.Now()
+	eCmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.bashrc && git push -u %s %s", cmd.RemoteName, cmd.RemoteBranch))
+	gitLog, err := c.execCmd(path, eCmd)
+	pushDTO.GitLog = gitLog
+	if err != nil {
+		fmt.Printf("git-cmd-handler-gitCmdPush, execGitCmd push log:%+v, err: %+v\n", gitLog, err)
+		return pushDTO, errors.New(gitLog + err.Error())
+	}
+	fmt.Printf("git-cmd-handler-gitCmdPush-success, cmd: %+v, contents: %s, timeSince: %s\n", cmd, gitLog, time.Since(startTime))
+
+	return pushDTO, nil
+}
+
+// 为了保证 engine Marshal 不报错，一定要返回一个结构体
+func (c *BaseGitCmd) revParse(path string, cmd *gitCmdParams) (*gitDTO, error) {
+	fmt.Printf("git-cmd-handler-gitCmdRevParse, cmd: %+v\n", cmd)
+	revParseDTO := &gitDTO{}
+
+	// 获取当前远程分支的最新 commit id
+	gitLog, err := c.execGitCmd(path, "git", "rev-parse", cmd.RemoteBranch)
+	revParseDTO.GitLog = gitLog
+	if err != nil {
+		fmt.Printf("git-cmd-handler-revParse log:%+v, err: %+v\n", gitLog, err)
+		return revParseDTO, errors.New(gitLog + err.Error())
+	}
+	fmt.Printf("git-cmd-handler-revParse-success, cmd: %+v, commitID: %s\n", cmd, gitLog)
+
+	// 去掉 commitID 末尾的 \n
+	revParseDTO.CommitID = strings.TrimSuffix(gitLog, "\n")
+
+	return revParseDTO, nil
+}
+
+// gitCmdPushHandler: push
+func (c *BaseGitCmd) gitCmdPushHandler(cmdType string, cmdContent string) (any, error) {
+	pushDTO := &gitDTO{}
+
+	//if isGitOperating(consts.AppRootDir) {
+	//	pushDTO.GitLog = "Git is operating"
+	//	log.Infof("git-cmd-handler-gitCmdPushHandler, Git is operating, cmd_type: %s, cmd_content: %s", cmdType, cmdContent)
+	//	return pushDTO, nil
+	//}
+
+	// 计时
+	startTime := time.Now()
+	defer func() {
+		fmt.Printf("gitCmdPushHandler took %v\n", time.Since(startTime))
+	}()
+
+	var gitResStr []byte
+
+	fmt.Printf("git-cmd-handler, gitCmdPush, cmd_type: %s, cmd_content: %s\n", cmdType, cmdContent)
+	gitCmd := gitCmdParams{}
+	err := json.Unmarshal([]byte(cmdContent), &gitCmd)
+	if err != nil {
+		return pushDTO, err
+	}
+
+	path := AppRootDir
+	//r, err := git.PlainOpen(path)
+	//if err != nil {
+	//	pushDTO.Error = err.Error()
+	//	return pushDTO, nil
+	//}
+
+	// push 操作
+	pushDTO, err1 := c.push(nil, path, &gitCmd)
+	fmt.Printf("git-cmd-handler-gitCmdPush, gitPushRes: %+v\n", pushDTO)
+	if err1 != nil {
+		gitResStr, _ = json.Marshal(pushDTO)
+		return string(gitResStr), err1
+	}
+
+	revParseDTO, err2 := c.revParse(path, &gitCmd)
+	fmt.Printf("git-cmd-handler-gitCmdPush, gitRevParseRes: %+v\n", revParseDTO)
+	if err2 != nil {
+		pushDTO.GitLog += revParseDTO.GitLog // 将 revParse log 拼接到 push log 中
+		gitResStr, _ = json.Marshal(pushDTO)
+		return string(gitResStr), err2
+	}
+
+	pushDTO.CommitID += revParseDTO.CommitID
+	gitResStr, _ = json.Marshal(pushDTO)
+	return string(gitResStr), nil
+}
+
 type gitDTO struct {
 	GitLog   string `json:"git_log"`   // 用来记录 git 执行 log
 	CommitID string `json:"commit_id"` // push 接口用来返回 commit id，其他接口忽略
 }
 
-// 在执行 git commit 前设置用户信息
-func setGitUserInfo(repoPath string, userName, userEmail string) error {
-	cmd := exec.Command("git", "config", "user.name", userName)
-	cmd.Dir = repoPath
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to set git user name: %v", err)
-	}
-
-	cmd = exec.Command("git", "config", "user.email", userEmail)
-	cmd.Dir = repoPath
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to set git user email: %v", err)
-	}
-	return nil
-}
-
 func main() {
 	// 使用示例
 	cmdGit := BaseGitCmd{}
-	content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
-	result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
-	if err != nil {
-		fmt.Printf("===result: %+v, err: %+v\n", result, err)
-	}
+	for {
+		content := "{\"remote_branch\":\"chore/init-clacky-env\",\"local_branch\":\"chore/init-clacky-env\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
+		result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
+		if err != nil {
+			fmt.Printf("===result: %+v, err: %+v\n", result, err)
+		}
 
-	fmt.Printf("\n========================================================================================\n")
-	fmt.Printf("\n========================================================================================\n")
-	fmt.Printf("\n========================================================================================\n")
+		go func() {
+			content1 := "{\"remote_branch\":\"chore/init-clacky-env\",\"local_branch\":\"chore/init-clacky-env\",\"user_name\":\"yunnanwenshan\",\"token\":\"\",\"remote_name\":\"origin\"}"
+			cmdGit.gitCmdPushHandler("git_push", content1)
+		}()
+
+		fmt.Printf("\n========================================================================================\n")
+		fmt.Printf("\n========================================================================================\n")
+		fmt.Printf("\n========================================================================================\n")
+	}
 }
