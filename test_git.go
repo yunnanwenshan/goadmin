@@ -153,10 +153,10 @@ func (c *BaseGitCmd) gitCmdAddCommitHandler(cmdType string, cmdContent string) (
 	// 计时
 	startTime := time.Now()
 	defer func() {
-		fmt.Printf("gitCmdAddCommitHandler took %v", time.Since(startTime))
+		fmt.Printf("gitCmdAddCommitHandler took %v\n", time.Since(startTime))
 	}()
 
-	fmt.Printf("git-cmd-handler, gitCmdAddCommit, cmd_type: %s, cmd_content: %s", cmdType, cmdContent)
+	fmt.Printf("git-cmd-handler, gitCmdAddCommit, cmd_type: %s, cmd_content: %s\n", cmdType, cmdContent)
 	var gitResStr []byte
 
 	gitCmd := gitCmdParams{}
@@ -169,7 +169,7 @@ func (c *BaseGitCmd) gitCmdAddCommitHandler(cmdType string, cmdContent string) (
 
 	// add 操作
 	addDto, err1 := c.add(path, &gitCmd)
-	fmt.Printf("git-cmd-handler-gitCmdAddCommitHandler, gitAddRes: %+v", addDto)
+	fmt.Printf("git-cmd-handler-gitCmdAddCommitHandler, gitAddRes: %+v\n", addDto)
 	if err1 != nil {
 		gitResStr, _ = json.Marshal(addDto)
 		return string(gitResStr), err1
@@ -177,7 +177,7 @@ func (c *BaseGitCmd) gitCmdAddCommitHandler(cmdType string, cmdContent string) (
 
 	// commit 操作
 	commitDto, err2 := c.commit(path, &gitCmd)
-	fmt.Printf("git-cmd-handler-gitCmdAddCommitHandler, gitCommitRes: %+v", commitDto)
+	fmt.Printf("git-cmd-handler-gitCmdAddCommitHandler, gitCommitRes: %+v\n", commitDto)
 	if err2 != nil {
 		addDto.GitLog += commitDto.GitLog // 将 commit log 拼接到 add log 中
 		gitResStr, _ = json.Marshal(addDto)
@@ -191,17 +191,17 @@ func (c *BaseGitCmd) gitCmdAddCommitHandler(cmdType string, cmdContent string) (
 
 // 为了保证 engine Marshal 不报错，一定要返回一个结构体
 func (c *BaseGitCmd) add(path string, cmd *gitCmdParams) (*gitDTO, error) {
-	fmt.Printf("git-cmd-handler-gitCmdAdd, cmd: %+v", cmd)
+	fmt.Printf("git-cmd-handler-gitCmdAdd, cmd: %+v\n", cmd)
 	dto := &gitDTO{}
 
 	startTime := time.Now()
 	gitLog, err := c.execGitCmd(path, "git", "add", cmd.File)
 	dto.GitLog = gitLog
 	if err != nil {
-		fmt.Printf("git-cmd-handler-gitCmdAdd, execGitCmd add log:%+v, err: %+v", gitLog, err)
+		fmt.Printf("git-cmd-handler-gitCmdAdd, execGitCmd add log:%+v, err: %+v\n", gitLog, err)
 		return dto, errors.New(gitLog + err.Error())
 	}
-	fmt.Printf("git-cmd-handler-gitCmdAdd-success, cmd: %+v, contents: %s, timeSince: %s", cmd, gitLog, time.Since(startTime))
+	fmt.Printf("git-cmd-handler-gitCmdAdd-success, cmd: %+v, contents: %s, timeSince: %s\n", cmd, gitLog, time.Since(startTime))
 
 	return dto, nil
 }
@@ -212,14 +212,14 @@ func (c *BaseGitCmd) commit(path string, cmd *gitCmdParams) (*gitDTO, error) {
 	dto := &gitDTO{}
 
 	startTime := time.Now()
-	eCmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.bashrc && git commit -m '%s'", cmd.Message))
+	eCmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.bashrc && git commit -m '%s'\n", cmd.Message))
 	gitLog, err := c.execCmd(path, eCmd)
 	dto.GitLog = gitLog
 	if err != nil {
-		fmt.Printf("git-cmd-handler-gitCmdCommit, execGitCmd commit log:%+v, err: %+v", gitLog, err)
+		fmt.Printf("git-cmd-handler-gitCmdCommit, execGitCmd commit log:%+v, err: %+v\n", gitLog, err)
 		return dto, errors.New(gitLog + err.Error())
 	}
-	fmt.Printf("git-cmd-handler-gitCmdCommit-success, cmd: %+v, contents: %s, timeSince: %s", cmd, gitLog, time.Since(startTime))
+	fmt.Printf("git-cmd-handler-gitCmdCommit-success, cmd: %+v, contents: %s, timeSince: %s\n", cmd, gitLog, time.Since(startTime))
 
 	return dto, nil
 }
