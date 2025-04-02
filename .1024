@@ -1,6 +1,6 @@
 # Command to install or update dependencies, will execute each time a new thread created to ensure dependencies up-to-date
-dependency_command: cd go-admin-ui && npm install && cd .. && go mod tidy
+dependency_command: go mod tidy;cd go-admin-ui && npm install
 # Compile command before running the project
 compile_command: go build
-# Command to run when "Run" button clicked
-run_command: ./go-admin server -c config/settings.yml
+# Commands to run when "Run" button clicked
+run_commands: ['./go-admin server -c config/settings.yml', 'cd go-admin-ui && npm run dev']
