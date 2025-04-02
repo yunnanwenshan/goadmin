@@ -27,7 +27,6 @@ antd demo：[https://antd.go-admin.pro](https://antd.go-admin.pro/)
 - Follow RESTful API design specifications
 - Based on the GIN WEB API framework, it provides rich middleware support (user authentication, cross-domain, access log, tracking ID, etc.)
 - RBAC access control model based on Casbin
-
 - JWT authentication
 
 - Support Swagger documents (based on swaggo)
