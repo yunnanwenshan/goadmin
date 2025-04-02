@@ -4,8 +4,6 @@
 [![Build Status](https://github.com/wenjianzhang/go-admin/workflows/build/badge.svg)](https://github.com/go-admin-team/go-admin)
 [![Release](https://img.shields.io/github/release/go-admin-team/go-admin.svg?style=flat-square)](https://github.com/go-admin-team/go-admin/releases)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/go-admin-team/go-admin)
-5. 角色管理：角色菜单权限分配、设置角色按机构进行数据范围权限划分。
-6. 字典管理：对系统中经常使用的一些较为固定的数据进行维护。
 7. 参数管理：对系统动态配置常用参数。
 8. 操作日志：系统正常操作日志记录和查询；系统异常信息日志记录和查询。
 9. 登录日志：系统登录日志记录查询包含登录异常。
