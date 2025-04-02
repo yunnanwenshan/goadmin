@@ -1,0 +1,239 @@
+package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"github.com/pkg/errors"
+	"os"
+	"os/exec"
+	"strings"
+	"time"
+)
+
+const (
+	AppRootDir = "/home/runner/app"
+)
+
+type gitCmdParams struct {
+	RemoteName   string `json:"remote_name"`
+	RemoteBranch string `json:"remote_branch"`
+	Message      string `json:"message"`
+	File         string `json:"file"`
+	LocalBranch  string `json:"local_branch"`
+	Username     string `json:"user_name"`
+	Token        string `json:"token"`
+}
+
+type BaseGitCmd struct {
+	CmdType    string `json:"cmd_type"`
+	CmdContent string `json:"cmd_content"`
+}
+
+const (
+	GitCmdTypeAddCommit = "git_add_commit"
+)
+
+// git 命令处理handler
+type gitCMdHandler func(cmdType string, cmdContent string) (any, error)
+
+// git 处理handler清单
+var gitCmdHandlerFactory map[string]gitCMdHandler
+
+func init() {
+	baseGitCmd := BaseGitCmd{}
+	gitCmdHandlerFactory = map[string]gitCMdHandler{
+		GitCmdTypeAddCommit: baseGitCmd.gitCmdAddCommitHandler,
+	}
+}
+
+// Handler git 命令处理统一入口
+func (c *BaseGitCmd) Handler() (any, error) {
+	fmt.Printf("gitCmd:git-cmd-handler-begin, cmd_type: %s, cmd_content: %s", c.CmdType, c.CmdContent)
+	if handler, ok := gitCmdHandlerFactory[c.CmdType]; ok {
+		res, err := handler(c.CmdType, c.CmdContent)
+		if err != nil {
+			fmt.Printf("gitCmd:git-cmd-handler-end, cmd_type: %s, cmd_content: %s", c.CmdType, c.CmdContent)
+			return "", err
+		}
+
+		return res, nil
+	}
+
+	return "", errors.New("unknown git cmd")
+}
+
+func (c *BaseGitCmd) getCurrentBranch(path string) (string, error) {
+	// 保存当前分支
+	currentBranch, err := c.execGitCmd(path, "git", "branch", "--show-current")
+	if err != nil {
+		return "", err
+	}
+	currentBranch = strings.TrimSuffix(currentBranch, "\n")
+	currentBranch = strings.TrimSpace(currentBranch)
+
+	return currentBranch, nil
+}
+
+func (c *BaseGitCmd) fetch(path string, cmd *gitCmdParams) (string, error) {
+	if cmd.RemoteName == "" {
+		return "", errors.New("gitCmdFetch-remote-name is null")
+	}
+
+	fmt.Printf("git-cmd-handler-gitCmdFetch, cmd: %+v", cmd)
+
+	fetchOut, err1 := c.execGitCmd(path, "git", "fetch", cmd.RemoteName, cmd.RemoteBranch)
+	if err1 != nil {
+		fmt.Printf("git-cmd-handler-gitCmdFetch-fail, cmd: %+v, beforeOut: %s", cmd, fetchOut)
+		return "", err1
+	}
+
+	fmt.Printf("git-cmd-handler-gitCmdFetch-success, cmd: %+v, currentBranch: %s", cmd, fetchOut)
+
+	return fetchOut, nil
+}
+
+// reset
+func (c *BaseGitCmd) reset(cmd *gitCmdParams, path string) (string, error) {
+	fmt.Printf("git-cmd-handler-gitCmdFetchAndReset-reset, cmd: %+v", cmd)
+	// reset
+	out, err := c.execGitCmd(path, "git", "reset", "--hard", fmt.Sprintf("%s/%s", cmd.RemoteName, cmd.RemoteBranch))
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Printf("git-cmd-handler-gitCmdFetchAndReset-reset, cmd: %s, err: %+v, out: %s", cmd, err, out)
+	return out, nil
+}
+
+// 执行git命令
+func (c *BaseGitCmd) execGitCmd(dir string, command string, args ...string) (string, error) {
+	arg := []string{"bash", "-c", command, strings.Join(args, " ")}
+	argStr := strings.Join(arg[2:], " ")
+	cmd := exec.Command(arg[0], arg[1], argStr)
+	cmd.Dir = dir
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	err := cmd.Run()
+
+	fmt.Printf("git-cmd-handler-execGitCmd, dir: %s, command: %s, args: %+v, out: %s, err: %v", dir, command, args, out.String(), err)
+
+	return out.String(), err
+}
+
+// 执行 cmd 命令
+func (c *BaseGitCmd) execCmd(dir string, cmd *exec.Cmd) (string, error) {
+	cmd.Dir = dir
+
+	// 检查目录是否存在，存在则设置 PATH
+	if _, err := os.Stat("/home/runner/app/node_modules/.bin"); os.IsNotExist(err) {
+		cmd.Env = os.Environ()
+	} else {
+		cmd.Env = append(os.Environ(), "PATH="+os.Getenv("PATH")+":/home/runner/app/node_modules/.bin")
+	}
+
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &out
+
+	err := cmd.Run()
+
+	fmt.Printf("git-cmd-handler-execGitCommitCmd, dir: %s, out: %s", dir, out.String())
+
+	return out.String(), err
+}
+
+// gitCmdAddCommitHandler: addAndCommit
+func (c *BaseGitCmd) gitCmdAddCommitHandler(cmdType string, cmdContent string) (any, error) {
+	addDto := &gitDTO{}
+
+	// 计时
+	startTime := time.Now()
+	defer func() {
+		fmt.Printf("gitCmdAddCommitHandler took %v", time.Since(startTime))
+	}()
+
+	fmt.Printf("git-cmd-handler, gitCmdAddCommit, cmd_type: %s, cmd_content: %s", cmdType, cmdContent)
+	var gitResStr []byte
+
+	gitCmd := gitCmdParams{}
+	err := json.Unmarshal([]byte(cmdContent), &gitCmd)
+	if err != nil {
+		return addDto, err
+	}
+
+	path := AppRootDir
+
+	// add 操作
+	addDto, err1 := c.add(path, &gitCmd)
+	fmt.Printf("git-cmd-handler-gitCmdAddCommitHandler, gitAddRes: %+v", addDto)
+	if err1 != nil {
+		gitResStr, _ = json.Marshal(addDto)
+		return string(gitResStr), err1
+	}
+
+	// commit 操作
+	commitDto, err2 := c.commit(path, &gitCmd)
+	fmt.Printf("git-cmd-handler-gitCmdAddCommitHandler, gitCommitRes: %+v", commitDto)
+	if err2 != nil {
+		addDto.GitLog += commitDto.GitLog // 将 commit log 拼接到 add log 中
+		gitResStr, _ = json.Marshal(addDto)
+		return string(gitResStr), err2
+	}
+
+	addDto.GitLog += commitDto.GitLog // 将 commit log 拼接到 add log 中
+	gitResStr, _ = json.Marshal(addDto)
+	return string(gitResStr), nil
+}
+
+// 为了保证 engine Marshal 不报错，一定要返回一个结构体
+func (c *BaseGitCmd) add(path string, cmd *gitCmdParams) (*gitDTO, error) {
+	fmt.Printf("git-cmd-handler-gitCmdAdd, cmd: %+v", cmd)
+	dto := &gitDTO{}
+
+	startTime := time.Now()
+	gitLog, err := c.execGitCmd(path, "git", "add", cmd.File)
+	dto.GitLog = gitLog
+	if err != nil {
+		fmt.Printf("git-cmd-handler-gitCmdAdd, execGitCmd add log:%+v, err: %+v", gitLog, err)
+		return dto, errors.New(gitLog + err.Error())
+	}
+	fmt.Printf("git-cmd-handler-gitCmdAdd-success, cmd: %+v, contents: %s, timeSince: %s", cmd, gitLog, time.Since(startTime))
+
+	return dto, nil
+}
+
+// 为了保证 engine Marshal 不报错，一定要返回一个结构体
+func (c *BaseGitCmd) commit(path string, cmd *gitCmdParams) (*gitDTO, error) {
+	fmt.Printf("git-cmd-handler-gitCmdCommit, cmd: %+v", cmd)
+	dto := &gitDTO{}
+
+	startTime := time.Now()
+	eCmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.bashrc && git commit -m '%s'", cmd.Message))
+	gitLog, err := c.execCmd(path, eCmd)
+	dto.GitLog = gitLog
+	if err != nil {
+		fmt.Printf("git-cmd-handler-gitCmdCommit, execGitCmd commit log:%+v, err: %+v", gitLog, err)
+		return dto, errors.New(gitLog + err.Error())
+	}
+	fmt.Printf("git-cmd-handler-gitCmdCommit-success, cmd: %+v, contents: %s, timeSince: %s", cmd, gitLog, time.Since(startTime))
+
+	return dto, nil
+}
+
+type gitDTO struct {
+	GitLog   string `json:"git_log"`   // 用来记录 git 执行 log
+	CommitID string `json:"commit_id"` // push 接口用来返回 commit id，其他接口忽略
+}
+
+func main() {
+	cmdGit := BaseGitCmd{}
+	content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
+	result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
+	if err != nil {
+		fmt.Printf("===result: %+v, err: %+v", result, err)
+	}
+}

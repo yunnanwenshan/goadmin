@@ -16,6 +16,6 @@ import (
 // @securityDefinitions.apikey Bearer
 // @in header
 // @name Authorization
-func main() {
+func main_test() {
 	cmd.Execute()
 }
