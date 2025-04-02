@@ -228,7 +228,31 @@ type gitDTO struct {
 	GitLog   string `json:"git_log"`   // 用来记录 git 执行 log
 	CommitID string `json:"commit_id"` // push 接口用来返回 commit id，其他接口忽略
 }
+
+// 在执行 git commit 前设置用户信息
+func setGitUserInfo(repoPath string, userName, userEmail string) error {
+	cmd := exec.Command("git", "config", "user.name", userName)
+	cmd.Dir = repoPath
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to set git user name: %v", err)
+	}
+
+	cmd = exec.Command("git", "config", "user.email", userEmail)
+	cmd.Dir = repoPath
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to set git user email: %v", err)
+	}
+	return nil
+}
+
 func main() {
+	// 使用示例
+	err := setGitUserInfo("/home/runner/app", "yunnanwenshan", "clackyai@dao43.com")
+	if err != nil {
+		fmt.Printf("setGitUserInfo-err: %+v\n", err)
+		os.Exit(1)
+	}
+
 	cmdGit := BaseGitCmd{}
 	for {
 		content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
@@ -240,5 +264,4 @@ func main() {
 		time.Sleep(time.Second * 5)
 		fmt.Printf("\n======================sleep: 5\n")
 	}
-
 }
