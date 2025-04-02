@@ -247,21 +247,14 @@ func setGitUserInfo(repoPath string, userName, userEmail string) error {
 
 func main() {
 	// 使用示例
-	err := setGitUserInfo("/home/runner/app", "yunnanwenshan", "clackyai@dao43.com")
-	if err != nil {
-		fmt.Printf("setGitUserInfo-err: %+v\n", err)
-		os.Exit(1)
-	}
-
 	cmdGit := BaseGitCmd{}
-	for {
-		content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
-		result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
-		if err != nil {
-			fmt.Printf("===result: %+v, err: %+v\n", result, err)
-		}
-
-		time.Sleep(time.Second * 5)
-		fmt.Printf("\n======================sleep: 5\n")
+	content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
+	result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
+	if err != nil {
+		fmt.Printf("===result: %+v, err: %+v\n", result, err)
 	}
+
+	fmt.Printf("\n========================================================================================\n")
+	fmt.Printf("\n========================================================================================\n")
+	fmt.Printf("\n========================================================================================\n")
 }
