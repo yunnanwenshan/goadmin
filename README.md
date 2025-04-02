@@ -16,7 +16,6 @@ The front-end and back-end separation authority management system based on Gin +
 [Video tutorial](https://space.bilibili.com/565616721/channel/detail?cid=125737)
 
 ## 🎬 Online Demo
-
 Element UI vue demo：[https://vue2.go-admin.dev](https://vue2.go-admin.dev/#/login)
 > 账号 / 密码： admin / 123456
 
