@@ -228,12 +228,17 @@ type gitDTO struct {
 	GitLog   string `json:"git_log"`   // 用来记录 git 执行 log
 	CommitID string `json:"commit_id"` // push 接口用来返回 commit id，其他接口忽略
 }
-
 func main() {
 	cmdGit := BaseGitCmd{}
-	content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
-	result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
-	if err != nil {
-		fmt.Printf("===result: %+v, err: %+v\n", result, err)
+	for {
+		content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
+		result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
+		if err != nil {
+			fmt.Printf("===result: %+v, err: %+v\n", result, err)
+		}
+
+		time.Sleep(time.Second * 5)
+		fmt.Printf("\n======================sleep: 5\n")
 	}
+
 }
