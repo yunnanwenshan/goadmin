@@ -4,7 +4,6 @@
 [![Build Status](https://github.com/wenjianzhang/go-admin/workflows/build/badge.svg)](https://github.com/go-admin-team/go-admin)
 [![Release](https://img.shields.io/github/release/go-admin-team/go-admin.svg?style=flat-square)](https://github.com/go-admin-team/go-admin/releases)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/go-admin-team/go-admin)
-9. 登录日志：系统登录日志记录查询包含登录异常。
 1. 接口文档：根据业务代码自动生成相关的api接口文档。
 1. 代码生成：根据数据表结构生成对应的增删改查相对应业务，全程可视化操作，让基本业务可以零代码实现。
 1. 表单构建：自定义页面样式，拖拉拽实现页面布局。
