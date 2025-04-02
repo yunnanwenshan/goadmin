@@ -202,7 +202,7 @@ func (c *BaseGitCmd) add(path string, cmd *gitCmdParams) (*gitDTO, error) {
 		fmt.Printf("git-cmd-handler-gitCmdAdd, execGitCmd add log:%+v, err: %+v\n", gitLog, err)
 		return dto, errors.New(gitLog + err.Error())
 	}
-	fmt.Printf("git-cmd-handler-gitCmdAdd-success, cmd: %+v, contents: %s, timeSince: %s\n", cmd, gitLog, time.Since(startTime))
+	fmt.Printf("git-cmd-handler-gitCmdAdd-success, timeSince: %s, cmd: %+v, contents: %s\n", time.Since(startTime), cmd, gitLog)
 
 	return dto, nil
 }
@@ -220,7 +220,7 @@ func (c *BaseGitCmd) commit(path string, cmd *gitCmdParams) (*gitDTO, error) {
 		fmt.Printf("git-cmd-handler-gitCmdCommit, execGitCmd commit log:%+v, err: %+v\n", gitLog, err)
 		return dto, errors.New(gitLog + err.Error())
 	}
-	fmt.Printf("git-cmd-handler-gitCmdCommit-success, cmd: %+v, contents: %s, timeSince: %s\n", cmd, gitLog, time.Since(startTime))
+	fmt.Printf("git-cmd-handler-gitCmdCommit-success, timeSince: %s, cmd: %+v, contents: %s\n", time.Since(startTime), cmd, gitLog)
 
 	return dto, nil
 }
@@ -245,7 +245,7 @@ func (c *BaseGitCmd) push(_ *git.Repository, path string, cmd *gitCmdParams) (*g
 		fmt.Printf("git-cmd-handler-gitCmdPush, execGitCmd push log:%+v, err: %+v\n", gitLog, err)
 		return pushDTO, errors.New(gitLog + err.Error())
 	}
-	fmt.Printf("git-cmd-handler-gitCmdPush-success, cmd: %+v, contents: %s, timeSince: %s\n", cmd, gitLog, time.Since(startTime))
+	fmt.Printf("git-cmd-handler-gitCmdPush-success, timeSince: %s, cmd: %+v, contents: %s, \n", time.Since(startTime), cmd, gitLog)
 
 	return pushDTO, nil
 }
@@ -304,14 +304,14 @@ func (c *BaseGitCmd) gitCmdPushHandler(cmdType string, cmdContent string) (any, 
 
 	// push 操作
 	pushDTO, err1 := c.push(nil, path, &gitCmd)
-	fmt.Printf("git-cmd-handler-gitCmdPush, gitPushRes: %+v\n", pushDTO)
 	if err1 != nil {
 		gitResStr, _ = json.Marshal(pushDTO)
 		return string(gitResStr), err1
 	}
 
+	fmt.Printf("git-cmd-handler-gitCmdPushHandler-success, timeSince: %s \n", time.Since(startTime))
+
 	revParseDTO, err2 := c.revParse(path, &gitCmd)
-	fmt.Printf("git-cmd-handler-gitCmdPush, gitRevParseRes: %+v\n", revParseDTO)
 	if err2 != nil {
 		pushDTO.GitLog += revParseDTO.GitLog // 将 revParse log 拼接到 push log 中
 		gitResStr, _ = json.Marshal(pushDTO)
