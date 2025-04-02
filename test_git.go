@@ -212,7 +212,7 @@ func (c *BaseGitCmd) commit(path string, cmd *gitCmdParams) (*gitDTO, error) {
 	dto := &gitDTO{}
 
 	startTime := time.Now()
-	eCmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.bashrc && git commit -m '%s'\n", cmd.Message))
+	eCmd := exec.Command("bash", "-c", fmt.Sprintf("source ~/.bashrc && git config --global user.email 'develop@clacky.ai' && git commit -m '%s'\n", cmd.Message))
 	gitLog, err := c.execCmd(path, eCmd)
 	dto.GitLog = gitLog
 	if err != nil {
@@ -231,13 +231,13 @@ type gitDTO struct {
 
 // 在执行 git commit 前设置用户信息
 func setGitUserInfo(repoPath string, userName, userEmail string) error {
-	cmd := exec.Command("git", "config", "--global", "user.name", userName)
+	cmd := exec.Command("git", "config", "user.name", userName)
 	cmd.Dir = repoPath
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to set git user name: %v", err)
 	}
 
-	cmd = exec.Command("git", "config", "--global", "user.email", userEmail)
+	cmd = exec.Command("git", "config", "user.email", userEmail)
 	cmd.Dir = repoPath
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to set git user email: %v", err)
