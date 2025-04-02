@@ -49,11 +49,11 @@ func init() {
 
 // Handler git 命令处理统一入口
 func (c *BaseGitCmd) Handler() (any, error) {
-	fmt.Printf("gitCmd:git-cmd-handler-begin, cmd_type: %s, cmd_content: %s", c.CmdType, c.CmdContent)
+	fmt.Printf("gitCmd:git-cmd-handler-begin, cmd_type: %s, cmd_content: %s\n", c.CmdType, c.CmdContent)
 	if handler, ok := gitCmdHandlerFactory[c.CmdType]; ok {
 		res, err := handler(c.CmdType, c.CmdContent)
 		if err != nil {
-			fmt.Printf("gitCmd:git-cmd-handler-end, cmd_type: %s, cmd_content: %s", c.CmdType, c.CmdContent)
+			fmt.Printf("gitCmd:git-cmd-handler-end, cmd_type: %s, cmd_content: %s\n", c.CmdType, c.CmdContent)
 			return "", err
 		}
 
@@ -80,29 +80,29 @@ func (c *BaseGitCmd) fetch(path string, cmd *gitCmdParams) (string, error) {
 		return "", errors.New("gitCmdFetch-remote-name is null")
 	}
 
-	fmt.Printf("git-cmd-handler-gitCmdFetch, cmd: %+v", cmd)
+	fmt.Printf("git-cmd-handler-gitCmdFetch, cmd: %+v\n", cmd)
 
 	fetchOut, err1 := c.execGitCmd(path, "git", "fetch", cmd.RemoteName, cmd.RemoteBranch)
 	if err1 != nil {
-		fmt.Printf("git-cmd-handler-gitCmdFetch-fail, cmd: %+v, beforeOut: %s", cmd, fetchOut)
+		fmt.Printf("git-cmd-handler-gitCmdFetch-fail, cmd: %+v, beforeOut: %s\n", cmd, fetchOut)
 		return "", err1
 	}
 
-	fmt.Printf("git-cmd-handler-gitCmdFetch-success, cmd: %+v, currentBranch: %s", cmd, fetchOut)
+	fmt.Printf("git-cmd-handler-gitCmdFetch-success, cmd: %+v, currentBranch: %s\n", cmd, fetchOut)
 
 	return fetchOut, nil
 }
 
 // reset
 func (c *BaseGitCmd) reset(cmd *gitCmdParams, path string) (string, error) {
-	fmt.Printf("git-cmd-handler-gitCmdFetchAndReset-reset, cmd: %+v", cmd)
+	fmt.Printf("git-cmd-handler-gitCmdFetchAndReset-reset, cmd: %+v\n", cmd)
 	// reset
 	out, err := c.execGitCmd(path, "git", "reset", "--hard", fmt.Sprintf("%s/%s", cmd.RemoteName, cmd.RemoteBranch))
 	if err != nil {
 		return "", err
 	}
 
-	fmt.Printf("git-cmd-handler-gitCmdFetchAndReset-reset, cmd: %s, err: %+v, out: %s", cmd, err, out)
+	fmt.Printf("git-cmd-handler-gitCmdFetchAndReset-reset, cmd: %s, err: %+v, out: %s\n", cmd, err, out)
 	return out, nil
 }
 
@@ -119,7 +119,7 @@ func (c *BaseGitCmd) execGitCmd(dir string, command string, args ...string) (str
 
 	err := cmd.Run()
 
-	fmt.Printf("git-cmd-handler-execGitCmd, dir: %s, command: %s, args: %+v, out: %s, err: %v", dir, command, args, out.String(), err)
+	fmt.Printf("git-cmd-handler-execGitCmd, dir: %s, command: %s, args: %+v, out: %s, err: %v\n", dir, command, args, out.String(), err)
 
 	return out.String(), err
 }
@@ -141,7 +141,7 @@ func (c *BaseGitCmd) execCmd(dir string, cmd *exec.Cmd) (string, error) {
 
 	err := cmd.Run()
 
-	fmt.Printf("git-cmd-handler-execGitCommitCmd, dir: %s, out: %s", dir, out.String())
+	fmt.Printf("git-cmd-handler-execGitCommitCmd, dir: %s, out: %s\n", dir, out.String())
 
 	return out.String(), err
 }
@@ -208,7 +208,7 @@ func (c *BaseGitCmd) add(path string, cmd *gitCmdParams) (*gitDTO, error) {
 
 // 为了保证 engine Marshal 不报错，一定要返回一个结构体
 func (c *BaseGitCmd) commit(path string, cmd *gitCmdParams) (*gitDTO, error) {
-	fmt.Printf("git-cmd-handler-gitCmdCommit, cmd: %+v", cmd)
+	fmt.Printf("git-cmd-handler-gitCmdCommit, cmd: %+v\n", cmd)
 	dto := &gitDTO{}
 
 	startTime := time.Now()
@@ -234,6 +234,6 @@ func main() {
 	content := "{\"remote_branch\":\"feat/user-module-enhancement\",\"local_branch\":\"feat/user-module-enhancement\",\"user_name\":\"yunnanwenshan\",\"remote_name\":\"origin\",\"message\":\"Fix: Corrected typo in README.md\",\"file\":\".\"}"
 	result, err := cmdGit.gitCmdAddCommitHandler("git_add_commit", content)
 	if err != nil {
-		fmt.Printf("===result: %+v, err: %+v", result, err)
+		fmt.Printf("===result: %+v, err: %+v\n", result, err)
 	}
 }
