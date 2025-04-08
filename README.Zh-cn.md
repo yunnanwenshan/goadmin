@@ -9,26 +9,8 @@
 1. 表单构建：自定义页面样式，拖拉拽实现页面布局。
 
 ``` bash
-# 首次配置需要初始化数据库资源信息
-$ ./go-admin migrate -c config/settings.dev.yml
-
 # ⚠️注意:windows 下使用
-$ go-admin.exe migrate -c config/settings.dev.yml
 
-
-# 启动项目，也可以用IDE进行调试
-# macOS or linux 下使用
-$ ./go-admin server -c config/settings.yml
-
-
-# ⚠️注意:windows 下使用
-$ go-admin.exe server -c config/settings.yml
-```
-
-#### sys_api 表的数据如何添加
-
-在项目启动时，使用`-a true` 系统会自动添加缺少的接口数据
-```bash
 ./go-admin server -c config/settings.yml -a true
 ```
 
